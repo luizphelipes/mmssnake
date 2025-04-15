@@ -185,10 +185,21 @@ def update_delivered_orders():
     finally:
         session.close()
 
+# Auto Ping/Render
+def ping_self():
+    try:
+        # Substitua pelo seu URL no Render
+        url = "https://seu-app.onrender.com/health"
+        requests.get(url, timeout=10)
+        logging.info("Self-ping executado com sucesso")
+    except Exception as e:
+        logging.error(f"Erro no self-ping: {str(e)}")
+
 
 
 def run_scheduled_task():
     schedule.every(10).minutes.do(check_pending_profiles)
+    schedule.every(14).minutes.do(ping_self)
     schedule.every(10).minutes.do(process_pending_payments)
     schedule.every().day.at("19:00").do(update_delivered_orders)  # Nova tarefa às 19:00
     logging.info("Agendador configurado para rodar tarefas periódicas.")

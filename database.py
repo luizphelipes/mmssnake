@@ -22,6 +22,6 @@ if DATABASE_URL and DATABASE_URL.startswith("postgres://"):
 engine = create_engine(DATABASE_URL, echo=True)
 Session = sessionmaker(bind=engine)
 
-def initialize_database():
+pythondef initialize_database():
     from models.base import Base
-   
+    Base.metadata.create_all(engine)

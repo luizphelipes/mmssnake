@@ -225,3 +225,8 @@ def update_order_status():
         return jsonify({"error": "Erro interno no servidor"}), 500
     finally:
         session.close()
+
+
+@app.route('/health', methods=['GET'])
+def health_check():
+    return jsonify({'status': 'ok'}), 200

@@ -58,7 +58,7 @@ class SingletonMeta(type):
         return cls._instances[cls]
 
 # Classe que encapsula a chamada para a API do Instagram.
-class InstagramAPI(metaclass=SingletonMeta):
+class InstagramService(metaclass=SingletonMeta):
     def __init__(self):
         # Chave e Host configurados uma única vez para a instância.
         self.api_key = os.getenv("INSTAGRAM230_API")

@@ -16,4 +16,5 @@ app.register_blueprint(payments_bp, url_prefix='/api')
 
 
 if __name__ == '__main__':
+    iniciar_agendador()
     app.run(debug=True)

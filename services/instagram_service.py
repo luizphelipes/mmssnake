@@ -94,15 +94,7 @@ class InstagramAPI(metaclass=SingletonMeta):
             print(f"Erro inesperado: {e}")
             return []
     
-    @staticmethod
-    def send_notification(admin_username, message):
-        """
-        Método para enviar notificações (substitui o envio direto de DM do Instagram)
-        Este é um placeholder - você precisará implementar seu próprio método de notificação
-        """
-        logger.info(f"NOTIFICAÇÃO para {admin_username}: {message}")
-        # Aqui você poderia integrar com outra API de mensagens, Email, SMS, etc.
-        return True
+
 
 # Singleton para facilitar o acesso ao serviço em várias partes do código
 _instance = InstagramService()

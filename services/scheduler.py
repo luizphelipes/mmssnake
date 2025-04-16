@@ -195,7 +195,7 @@ def run_scheduled_task():
         try:
             schedule.run_pending()
             logging.info("Agendador rodando...")
-            time.sleep(900)
+            time.sleep(600)
         except Exception as e:
             logging.error(f"Erro no loop do agendador: {str(e)}")
             time.sleep(60)

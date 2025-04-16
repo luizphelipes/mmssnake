@@ -46,54 +46,33 @@ class InstagramService:
             logger.error(f"Erro ao verificar perfil {username} com API: {str(e)}")
             return "error"
     
-    # Implementação de um metaclasse Singleton.
-class InstagramService(type):
-    _instances = {}
+api_host = "instagram230.p.rapidapi.com"
+api_key = "f0755ae8acmsh12cfb31062c056cp1ef4dbjsn53d93beab1cb"
 
-    def __call__(cls, *args, **kwargs):
-        # Se já existir uma instância da classe, retorna-a.
-        if cls not in cls._instances:
-            instance = super().__call__(*args, **kwargs)
-            cls._instances[cls] = instance
-        return cls._instances[cls]
+
 
 # Classe que encapsula a chamada para a API do Instagram.
-class InstagramService(metaclass=InstagramService):
-    def __init__(self):
-        # Chave e Host configurados uma única vez para a instância.
-        self.api_key = os.getenv("INSTAGRAM230_API")
-        self.api_host = "instagram230.p.rapidapi.com"
-        
-        # Utilizando uma sessão do requests para reaproveitar conexões HTTP.
-        self.session = requests.Session()
-        self.session.headers.update({
-            "X-Rapidapi-Key": self.api_key,
-            "X-Rapidapi-Host": self.api_host
-        })
-    
-    def get_last_4_post_ids(self, username):
-        """
-        Busca os 4 últimos IDs de post para o usuário fornecido.
-        Retorna uma lista contendo esses IDs ou uma lista vazia em caso de erro.
-        """
-        url = f"https://{self.api_host}/user/posts?username={username}"
+class InstagramService:
+    def get_last_4_post_ids(username, api_host, api_key):
+        url = f"https://{api_host}/user/posts?username={username}"
+        headers = {
+            "X-Rapidapi-Key": api_key,
+            "X-Rapidapi-Host": api_host
+        }
+
         try:
-            response = self.session.get(url)
+            response = requests.get(url, headers=headers)
             response.raise_for_status()
             data = response.json()
-
-            # Obtem os itens e extrai o campo 'code' dos primeiros 4 resultados.
             items = data.get('items', [])
-            last_4_codes = [item['code'] for item in items[:4] if 'code' in item]
-            return last_4_codes
-        
+            return [item['code'] for item in items[:4] if 'code' in item]
         except requests.exceptions.HTTPError as e:
             print(f"Erro HTTP: {e}")
             return []
         except Exception as e:
             print(f"Erro inesperado: {e}")
             return []
-    
+
 
 
 # Singleton para facilitar o acesso ao serviço em várias partes do código

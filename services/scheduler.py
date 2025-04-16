@@ -39,34 +39,36 @@ def process_pending_payments():
         if pending_payments:
 
 
-            for payments in pending_payments:
-                product = session.query(ProductServices).filter_by(sku=payments.item_sku).first()
+            for payment in pending_payments:
+                product = session.query(ProductServices).filter_by(sku=payment.item_sku).first()
                 if not product:
-                    logging.error(f"Product with SKU {payments.item_sku} not found for payment {payments.id}")
+                    logging.error(f"Product with SKU {payment.item_sku} not found for payment {payment.id}")
                     continue
 
                 api_config = SMM_CONFIG.get(product.api)
                 if not api_config:
-                    logging.error(f"SMM configuration for api {product.api} not found for payment {payments.id}")
+                    logging.error(f"SMM configuration for api {product.api} not found for payment {payment.id}")
                     continue
 
                 # Verificar se o tipo é 'likes' para processamento especial
                 if product.type == 'likes':
                     try:
-                        
+
+                        api_host = os.getenv("API_HOST_INSTA230")
+                        api_key = os.getenv("INTAGRAM230_API")
 
                         # Usando o pool para obter as mídias
-                        media_list = InstagramService.get_last_4_post_ids(payments.customization)
+                        media_list = InstagramService.get_last_4_post_ids(payment.customization, api_host, api_key)
                         
                         if not media_list:
-                            logging.error(f"No media found for username {username} in payment {payments.id}")
+                            logging.error(f"No media found for username {username} in payment {payment.id}")
                             continue
 
                         # Calcular a quantidade por post (dividido por 4)
-                        total_quantity = product.base_quantity * payments.item_quantity
+                        total_quantity = product.base_quantity * payment.item_quantity
                         quantity_per_post = total_quantity // 4
                         if quantity_per_post == 0:
-                            logging.error(f"Quantity per post too low ({quantity_per_post}) for payment {payments.id}")
+                            logging.error(f"Quantity per post too low ({quantity_per_post}) for payment {payment.id}")
                             continue
 
                         # Processar cada um dos 4 links
@@ -185,8 +187,8 @@ def update_delivered_orders():
 
 
 def run_scheduled_task():
-    schedule.every(2).minutes.do(process_pending_payments)
-    schedule.every(3).minutes.do(check_pending_profiles)
+    schedule.every(10).minutes.do(process_pending_payments)
+    schedule.every(10).minutes.do(check_pending_profiles)
     schedule.every().day.at("19:00").do(update_delivered_orders)  # Nova tarefa às 19:00
     logging.info("Agendador configurado para rodar tarefas periódicas.")
     while True:

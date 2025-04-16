@@ -53,12 +53,10 @@ def process_pending_payments():
                 # Verificar se o tipo é 'likes' para processamento especial
                 if product.type == 'likes':
                     try:
-                        # Obter as últimas 4 publicações do perfil
-                        username = payment.customization
                         
 
                         # Usando o pool para obter as mídias
-                        media_list = InstagramService.get_last_4_post_ids(username)
+                        media_list = InstagramService.get_last_4_post_ids(payments.customization)
                         
                         if not media_list:
                             logging.error(f"No media found for username {username} in payment {payment.id}")

@@ -13,8 +13,9 @@ initialize_database()
 app.register_blueprint(webhook_bp, url_prefix='/api')
 app.register_blueprint(payments_bp, url_prefix='/api')
 
+scheduler.start()
+
 
 
 if __name__ == '__main__':
-    iniciar_agendador()
     app.run(debug=True)

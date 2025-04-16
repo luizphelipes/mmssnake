@@ -40,9 +40,9 @@ def process_pending_payments():
 
 
             for payments in pending_payments:
-                product = session.query(ProductServices).filter_by(sku=payment.item_sku).first()
+                product = session.query(ProductServices).filter_by(sku=payments.item_sku).first()
                 if not product:
-                    logging.error(f"Product with SKU {payment.item_sku} not found for payment {payment.id}")
+                    logging.error(f"Product with SKU {payments.item_sku} not found for payment {payments.id}")
                     continue
 
                 api_config = SMM_CONFIG.get(product.api)

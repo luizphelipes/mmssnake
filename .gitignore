@@ -1,0 +1,88 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+venv/
+.env/
+.env.bak/
+.venv/
+
+# Jupyter Notebook Checkpoints
+.ipynb_checkpoints
+
+# VSCode and IDEs
+.vscode/
+.idea/
+
+# macOS files
+.DS_Store
+
+# PyCharm
+*.iml
+
+# Windows thumbnail cache
+Thumbs.db
+
+# Python logs
+*.log
+
+# SQLite database
+*.sqlite3
+*.db
+
+# System files
+*.swp
+*.swo
+
+# Pipenv and Poetry
+Pipfile.lock
+poetry.lock
+
+# dotenv
+.env.*
+!env.example
+
+# compiled C files
+*.so
+
+# Unit test / coverage
+htmlcov/
+.tox/
+.nox/
+.coverage
+coverage.xml
+.cache
+pytest_cache/
+
+# MyPy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# PyInstaller
+*.spec
+dist/
+build/
+
+# Sphinx documentation
+docs/_build/
+
+# Local dumps or backup files
+*.bak
+*.tmp
+*.old
+
+# Ignore output folders
+output/
+outputs/
+results/
+
+# Ignore scheduler logs
+scheduler.log
+
+# Ignore credentials or API keys
+config.json
+secret*.json
+apikey*.json

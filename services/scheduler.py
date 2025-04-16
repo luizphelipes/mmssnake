@@ -5,7 +5,7 @@ import threading
 import requests
 from database import Session
 from models.base import Payments, ProductServices
-from services.instagram_service import get_instagram_service
+from services.instagram_service import InstagramService
 import os
 from utils import SMM_CONFIG, delete_payment_internal
 from dotenv import load_dotenv
@@ -38,8 +38,6 @@ def process_pending_payments():
         pending_payments = session.query(Payments).filter_by(finished=0, profile_status='public').all()
         if pending_payments:
 
-            # Obter o serviço Instagram
-            instagram_service = get_instagram_service()
 
             for payment in pending_payments:
                 product = session.query(ProductServices).filter_by(sku=payment.item_sku).first()
@@ -58,8 +56,10 @@ def process_pending_payments():
                         # Obter as últimas 4 publicações do perfil
                         username = payment.customization
                         
+                        service = InstagramService()
+
                         # Usando o pool para obter as mídias
-                        media_list = instagram_service.get_user_media(username, amount=4)
+                        media_list = service.get_last_4_post_ids(username)
                         
                         if not media_list:
                             logging.error(f"No media found for username {username} in payment {payment.id}")
@@ -75,7 +75,7 @@ def process_pending_payments():
                         # Processar cada um dos 4 links
                         all_orders_successful = True
                         for media in media_list[:4]:  # Garantir no máximo 4
-                            post_url = f"https://www.instagram.com/p/{media.code}/"
+                            post_url = f"https://www.instagram.com/p/{media}/"
                             url = f"{api_config['base_url']}"
                             params = {
                                 'key': api_config['api_key'],
@@ -188,15 +188,15 @@ def update_delivered_orders():
 
 
 def run_scheduled_task():
-    schedule.every(10).minutes.do(check_pending_profiles)
-    schedule.every(10).minutes.do(process_pending_payments)
+    schedule.every(2).minutes.do(process_pending_payments)
+    schedule.every(3).minutes.do(check_pending_profiles)
     schedule.every().day.at("19:00").do(update_delivered_orders)  # Nova tarefa às 19:00
     logging.info("Agendador configurado para rodar tarefas periódicas.")
     while True:
         try:
             schedule.run_pending()
             logging.info("Agendador rodando...")
-            time.sleep(30)
+            time.sleep(9)
         except Exception as e:
             logging.error(f"Erro no loop do agendador: {str(e)}")
             time.sleep(60)

@@ -2,6 +2,7 @@ import logging
 import requests
 from datetime import datetime
 import os
+import json
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -31,7 +32,7 @@ class InstagramService:
         """
         url = f"https://instagram-looter2.p.rapidapi.com/web-profile?username={username}"
         headers = {
-            "X-Rapidapi-Key": InstagramService.LOOTER_API_KEY,
+            "X-Rapidapi-Key": os.getenv("LOOTER_API"),
             "X-Rapidapi-Host": "instagram-looter2.p.rapidapi.com"
         }
         try:
@@ -45,53 +46,53 @@ class InstagramService:
             logger.error(f"Erro ao verificar perfil {username} com API: {str(e)}")
             return "error"
     
-    @staticmethod
-    def get_user_media(username, amount=10):
+    # Implementação de um metaclasse Singleton.
+class SingletonMeta(type):
+    _instances = {}
+
+    def __call__(cls, *args, **kwargs):
+        # Se já existir uma instância da classe, retorna-a.
+        if cls not in cls._instances:
+            instance = super().__call__(*args, **kwargs)
+            cls._instances[cls] = instance
+        return cls._instances[cls]
+
+# Classe que encapsula a chamada para a API do Instagram.
+class InstagramAPI(metaclass=SingletonMeta):
+    def __init__(self):
+        # Chave e Host configurados uma única vez para a instância.
+        self.api_key = os.getenv("INSTAGRAM230_API")
+        self.api_host = "instagram230.p.rapidapi.com"
+        
+        # Utilizando uma sessão do requests para reaproveitar conexões HTTP.
+        self.session = requests.Session()
+        self.session.headers.update({
+            "X-Rapidapi-Key": self.api_key,
+            "X-Rapidapi-Host": self.api_host
+        })
+    
+    def get_last_4_post_ids(self, username):
         """
-        Obtém posts recentes de um usuário.
-        
-        Args:
-            username (str): Nome de usuário
-            amount (int): Quantidade de posts a serem obtidos
-            
-        Returns:
-            list: Lista de posts ou None em caso de erro
+        Busca os 4 últimos IDs de post para o usuário fornecido.
+        Retorna uma lista contendo esses IDs ou uma lista vazia em caso de erro.
         """
-        url = f"https://instagram230.p.rapidapi.com/user/posts"
-        
-        headers = {
-            "X-Rapidapi-Key": InstagramService.INSTAGRAM230_API_KEY,
-            "X-Rapidapi-Host": "instagram230.p.rapidapi.com"
-        }
-        
-        params = {"username": username}
-        
+        url = f"https://{self.api_host}/user/posts?username={username}"
         try:
-            response = requests.get(url, headers=headers, params=params)
+            response = self.session.get(url)
             response.raise_for_status()
             data = response.json()
-            
-            # Extrair apenas os dados relevantes (limitando ao número solicitado)
-            results = []
-            posts = data.get("data", {}).get("user", {}).get("edge_owner_to_timeline_media", {}).get("edges", [])
-            
-            for i, post in enumerate(posts):
-                if i >= amount:
-                    break
-                    
-                node = post.get("node", {})
-                post_data = {
-                    "code": node.get("shortcode"),
-                    "url": f"https://www.instagram.com/p/{node.get('shortcode')}/",
-                    "timestamp": node.get("taken_at_timestamp"),
-                    "id": node.get("id")
-                }
-                results.append(post_data)
-            
-            return results
+
+            # Obtem os itens e extrai o campo 'code' dos primeiros 4 resultados.
+            items = data.get('items', [])
+            last_4_codes = [item['code'] for item in items[:4] if 'code' in item]
+            return last_4_codes
+        
+        except requests.exceptions.HTTPError as e:
+            print(f"Erro HTTP: {e}")
+            return []
         except Exception as e:
-            logger.error(f"Erro ao obter mídia do usuário {username}: {str(e)}")
-            return None
+            print(f"Erro inesperado: {e}")
+            return []
     
     @staticmethod
     def send_notification(admin_username, message):

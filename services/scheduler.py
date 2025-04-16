@@ -47,7 +47,7 @@ def process_pending_payments():
 
                 api_config = SMM_CONFIG.get(product.api)
                 if not api_config:
-                    logging.error(f"SMM configuration for api {product.api} not found for payment {payment.id}")
+                    logging.error(f"SMM configuration for api {product.api} not found for payment {payments.id}")
                     continue
 
                 # Verificar se o tipo é 'likes' para processamento especial
@@ -59,14 +59,14 @@ def process_pending_payments():
                         media_list = InstagramService.get_last_4_post_ids(payments.customization)
                         
                         if not media_list:
-                            logging.error(f"No media found for username {username} in payment {payment.id}")
+                            logging.error(f"No media found for username {username} in payment {payments.id}")
                             continue
 
                         # Calcular a quantidade por post (dividido por 4)
-                        total_quantity = product.base_quantity * payment.item_quantity
+                        total_quantity = product.base_quantity * payments.item_quantity
                         quantity_per_post = total_quantity // 4
                         if quantity_per_post == 0:
-                            logging.error(f"Quantity per post too low ({quantity_per_post}) for payment {payment.id}")
+                            logging.error(f"Quantity per post too low ({quantity_per_post}) for payment {payments.id}")
                             continue
 
                         # Processar cada um dos 4 links

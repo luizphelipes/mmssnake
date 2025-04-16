@@ -56,10 +56,9 @@ def process_pending_payments():
                         # Obter as últimas 4 publicações do perfil
                         username = payment.customization
                         
-                        service = InstagramService()
 
                         # Usando o pool para obter as mídias
-                        media_list = service.get_last_4_post_ids(username)
+                        media_list = InstagramService.get_last_4_post_ids(username)
                         
                         if not media_list:
                             logging.error(f"No media found for username {username} in payment {payment.id}")

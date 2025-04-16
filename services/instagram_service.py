@@ -46,13 +46,10 @@ class InstagramService:
             logger.error(f"Erro ao verificar perfil {username} com API: {str(e)}")
             return "error"
     
-api_host = "instagram230.p.rapidapi.com"
-api_key = "f0755ae8acmsh12cfb31062c056cp1ef4dbjsn53d93beab1cb"
 
 
 
 # Classe que encapsula a chamada para a API do Instagram.
-class InstagramService:
     def get_last_4_post_ids(username, api_host, api_key):
         url = f"https://{api_host}/user/posts?username={username}"
         headers = {

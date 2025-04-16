@@ -5,7 +5,7 @@ import threading
 import requests
 from database import Session
 from models.base import Payments, ProductServices
-from services.instagram_service import InstagramService
+from services.instagram_service import InstagramService, check_profile_privacy
 import os
 from utils import SMM_CONFIG, delete_payment_internal
 from dotenv import load_dotenv

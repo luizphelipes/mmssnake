@@ -18,7 +18,7 @@ load_dotenv()
 def check_pending_profiles():
     session = Session()
     try:
-        pending_payments = session.query(Payments).filter_by(profile_status='private').all()
+        pending_payments = session.query(Payments).filter_by(profile_status='private', "error").all()
         if pending_payments:
            
             for payments in pending_payments:

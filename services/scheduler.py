@@ -18,7 +18,9 @@ load_dotenv()
 def check_pending_profiles():
     session = Session()
     try:
-        profiles_to_check = session.query(Payments).filter(Payments.profile_status.in_(["private", "error"])).all()
+        pending_payments = session.query(Payments).filter(
+Payments.profile_status.in_(["private", "error"])  # 👈 Filtra por ambos
+).all()
         if pending_payments:
            
             for payments in pending_payments:
@@ -188,7 +190,7 @@ def update_delivered_orders():
 
 def run_scheduled_task():
     schedule.every(2).minutes.do(process_pending_payments)
-    schedule.every(2).minutes.do(check_pending_profiles)
+    schedule.every(15).minutes.do(check_pending_profiles)
     schedule.every().day.at("19:00").do(update_delivered_orders)  # Nova tarefa às 19:00
     logging.info("Agendador configurado para rodar tarefas periódicas.")
     while True:

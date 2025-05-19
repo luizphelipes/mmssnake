@@ -3,13 +3,11 @@
     "builder": "nixpacks",
     "config": {
       "nixpacks": {
-        // pacotes de sistema necessários para Pillow
         "packages": [
           "zlib",     // compressão PNG/GIF
           "jpeg",     // suporte JPEG
           "freetype"  // fontes TrueType
         ],
-        // seus comandos de build
         "buildCommand": "pip install -r requirements.txt",
         "startCommand": "gunicorn app:app"
       }

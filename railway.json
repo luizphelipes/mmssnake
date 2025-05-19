@@ -4,9 +4,9 @@
     "config": {
       "nixpacks": {
         "packages": [
-          "zlib",     // compressão PNG/GIF
-          "jpeg",     // suporte JPEG
-          "freetype"  // fontes TrueType
+          "zlib",     
+          "jpeg",    
+          "freetype"  
         ],
         "buildCommand": "pip install -r requirements.txt",
         "startCommand": "gunicorn app:app"

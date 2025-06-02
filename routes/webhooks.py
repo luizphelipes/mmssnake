@@ -12,6 +12,8 @@ from utils import sanitize_customization
 from services.instagram_service import InstagramService
 from contextlib import contextmanager
 from dotenv import load_dotenv
+from services.telegram_sender import telegram
+
 
 load_dotenv()
 
@@ -70,6 +72,7 @@ def webhook():
     try:
         data = request.get_json(force=True)
         logging.info(f"Received webhook: {data}")
+        telegram.send(f"Received webhook: {data}")
     except Exception as e:
         logging.error("Erro ao converter payload para JSON: %s", str(e))
         return jsonify({'error': 'Formato de payload inválido'}), 400

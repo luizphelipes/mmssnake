@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/mmssnake
+      - YAMPI_API_KEY=${YAMPI_API_KEY}
+      - YAMPI_SECRET_KEY=${YAMPI_SECRET_KEY}
+      - YAMPI_BASE_URL=${YAMPI_BASE_URL}
+      - LOOTER_API=${LOOTER_API}
+      - INTAGRAM230_API=${INTAGRAM230_API}
+      - YAMPI_WEBHOOK_SECRET=${YAMPI_WEBHOOK_SECRET}
+    depends_on:
+      - db
+    volumes:
+      - .:/app
+    command: >
+      sh -c "python -c 'from database import initialize_database; initialize_database()' &&
+             gunicorn --bind 0.0.0.0:5000 --reload app:app"
+
+  db:
+    image: postgres:14
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=mmssnake
+    ports:
+      - "5435:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    command: tunnel --no-autoupdate run --token eyJhIjoiNWM3OWQ0NGVmY2E0MjBhMmJiNmJlOWQxNTg1MjNlMjAiLCJ0IjoiMDQ2YWZiNTktMjRkMy00NDViLThhMWQtOTBkYjBkZTY0Njk4IiwicyI6IlltRTRPRFJrTVRFdFlqSTFPQzAwWmpoaUxUbGlOMkl0WlRrMU1EUTBOalV6WVdNMiJ9
+    depends_on:
+      - web
+
+volumes:
+  postgres_data: 

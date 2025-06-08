@@ -63,7 +63,7 @@ def process_pending_payments():
                         api_key = os.getenv("INTAGRAM230_API")
 
                         # Usando o pool para obter as mídias
-                        media_list = InstagramService.get_last_4_post_ids(payment.customization, api_host, api_key)
+                        media_list = InstagramService.get_last_4_post_ids(payment.customization)
                         
                         if not media_list:
                             logging.error(f"No media found for username {username} in payment {payment.id}")

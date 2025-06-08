@@ -16,8 +16,8 @@ if DATABASE_URL and DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+psycopg2://", 1)
 
 # Adicionar parâmetros SSL diretamente na URL (se necessário)
-if not DATABASE_URL.endswith("?sslmode=require"):
-    DATABASE_URL += "?sslmode=require"  # Apenas se o servidor exigir SSL
+# if not DATABASE_URL.endswith("?sslmode=require"):
+#     DATABASE_URL += "?sslmode=require"  # Apenas se o servidor exigir SSL
 
 # Configurar engine sem o parâmetro 'ssl' inválido
 engine = create_engine(

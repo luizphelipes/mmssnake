@@ -23,7 +23,8 @@ def get_payments():
             'status_alias': payment.status_alias,
             'customer_name': payment.customer_name,
             'email': payment.email,
-            'phone_full_number': payment.phone_full_number, 
+            'phone_full_number': payment.phone_full_number,
+            'customer_ip': payment.customer_ip,
             'item_sku': payment.item_sku,
             'item_quantity': payment.item_quantity,
             'customization': payment.customization,
@@ -64,6 +65,8 @@ def update_payment(id):
             payment.email = data['email']
         if 'phone_full_number' in data:
             payment.phone_full_number = data['phone_full_number']
+        if 'customer_ip' in data:
+            payment.customer_ip = data['customer_ip']
         if 'item_sku' in data:
             payment.item_sku = data['item_sku']
         if 'item_quantity' in data:

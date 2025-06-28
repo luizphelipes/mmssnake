@@ -7,7 +7,7 @@ from database import Session
 from models.base import Payments, ProductServices
 from services.instagram_service import InstagramService
 import os
-from utils import SMM_CONFIG, delete_payment_internal
+from utils import SMM_CONFIG
 from dotenv import load_dotenv
 from services.yampi_client import YampiClient
 from services.telegram_sender import telegram
@@ -65,18 +65,19 @@ def process_pending_payments():
                         # Usando o pool para obter as mídias
                         media_list = InstagramService.get_last_4_post_ids(payment.customization)
                         
-                        if not media_list:
-                            logging.error(f"No media found for username {username} in payment {payment.id}")
+                        num_posts = len(media_list)
+                        if num_posts == 0:
+                            logging.error(f"No media found for username {payment.customization} in payment {payment.id}")
                             continue
 
-                        # Calcular a quantidade por post (dividido por 4)
+                        # Calcular a quantidade por post (dividido pelo número real de publicações)
                         total_quantity = product.base_quantity * payment.item_quantity
-                        quantity_per_post = total_quantity // 4
+                        quantity_per_post = total_quantity // num_posts
                         if quantity_per_post == 0:
                             logging.error(f"Quantity per post too low ({quantity_per_post}) for payment {payment.id}")
                             continue
 
-                        # Processar cada um dos 4 links
+                        # Processar cada uma das publicações existentes (até 4)
                         all_orders_successful = True
                         for media in media_list[:4]:  # Garantir no máximo 4
                             post_url = f"https://www.instagram.com/p/{media}/"
@@ -174,14 +175,10 @@ def update_delivered_orders():
                 logging.error(f"Erro ao atualizar o pedido {order_id} para 'delivered'.")
                 continue
 
-            success, message = delete_payment_internal(payment.id)
-            if not success:
-                logging.error(f"Erro ao deletar o pedido {payment.id} após atualização: {message}")
-                continue
-
-            # Se quiser atualizar o banco também:
-            # payment.status_alias = "delivered"
-            # session.commit()
+            # Atualizar o status no banco local também
+            payment.status_alias = "delivered"
+            session.commit()
+            logging.info(f"Pedido {order_id} atualizado para 'delivered' com sucesso.")
 
         logging.info(f"Atualização concluída para {len(finished_payments)} pedidos.")
 
@@ -195,8 +192,12 @@ def update_delivered_orders():
 
 def run_scheduled_task():
     schedule.every(2).minutes.do(process_pending_payments)
-    schedule.every(15).minutes.do(check_pending_profiles)
-    schedule.every().day.at("19:00").do(update_delivered_orders)  # Nova tarefa às 19:00
+    schedule.every(10).minutes.do(check_pending_profiles)
+    schedule.every().day.at("09:00").do(update_delivered_orders)
+    schedule.every().day.at("15:00").do(update_delivered_orders)
+    schedule.every().day.at("19:00").do(update_delivered_orders)
+    schedule.every().day.at("21:00").do(update_delivered_orders)
+    schedule.every().day.at("23:00").do(update_delivered_orders)
     logging.info("Agendador configurado para rodar tarefas periódicas.")
     while True:
         try:

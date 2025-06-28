@@ -23,6 +23,7 @@ class Payments(Base):
     customer_name = Column(String(255))
     email = Column(String(255))
     phone_full_number = Column(String(50))
+    customer_ip = Column(String(45))  # IPv4: 15 chars, IPv6: 39 chars, + margem
     item_sku = Column(String(255))
     item_quantity = Column(Integer)
     customization = Column(String(255))

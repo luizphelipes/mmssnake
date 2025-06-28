@@ -135,22 +135,29 @@ class InstagramService:
             return False, None
 
     @staticmethod
-    @timed_lru_cache(seconds=300, maxsize=100)
+    @timed_lru_cache(seconds=30, maxsize=100)
     def check_profile_privacy(username: str, account_id: str = None) -> str:
         """
         Verifica se o perfil do Instagram é público ou privado.
         Tenta Instagrapi primeiro, se falhar usa API externa como fallback.
+        Retorna 'error' se o perfil não existir ou for inválido.
         """
         instance = get_instagram_service()
         
         # Tenta Instagrapi primeiro
         client = instance._get_client(account_id)
         if client:
-            success, result = instance._try_instagrapi_first(
-                lambda: "private" if client.user_info_by_username(username).is_private else "public"
-            )
-            if success:
-                return result
+            try:
+                user_info = client.user_info_by_username(username)
+                if not user_info:
+                    return "error"
+                return "private" if user_info.is_private else "public"
+            except Exception as e:
+                # Se a exceção indicar usuário não encontrado, retorna 'error'
+                if "not found" in str(e).lower() or "does not exist" in str(e).lower():
+                    return "error"
+                # Caso contrário, tenta fallback
+                logger.warning(f"Falha ao usar Instagrapi: {e}")
         
         # Fallback para API externa
         url = f"https://instagram-looter2.p.rapidapi.com/web-profile?username={username}"
@@ -162,7 +169,10 @@ class InstagramService:
             response = requests.get(url, headers=headers)
             response.raise_for_status()
             data = response.json()
-            is_private = data.get("data", {}).get("user", {}).get("is_private", True)
+            user_data = data.get("data", {}).get("user")
+            if not user_data:
+                return "error"
+            is_private = user_data.get("is_private", True)
             return "private" if is_private else "public"
         except Exception as e:
             logger.error(f"Erro ao verificar perfil {username} com API: {str(e)}")

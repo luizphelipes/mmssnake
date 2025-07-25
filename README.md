@@ -8,7 +8,7 @@ Este projeto é um sistema de automação para processar pedidos da plataforma e
 
 - **Processamento de Webhooks**: Recebe notificações da Yampi quando um pedido é pago
 - **Validação de Perfis**: Verifica se o perfil do Instagram fornecido é válido e público
-- **Serviços Automatizados**: Fornece serviços de seguidores e likes para contas do Instagram
+- **Serviços Automatizados**: Fornece serviços de seguidores, likes, views e stories para contas do Instagram
 - **Execução Programada**: Verifica periodicamente pedidos pendentes e atualiza status
 - **Gestão de Produtos**: Armazena e gerencia configurações de produtos/serviços
 - **Sistema de Restrição de Brindes**: Controle rigoroso para produtos gratuitos (SKU: 9R628ZD4Y)
@@ -62,7 +62,7 @@ Armazena informações sobre os serviços/produtos disponíveis:
 - `service_id`: ID do serviço na API do SMM
 - `api`: Nome da API a ser usada (ex: 'machinesmm', 'worldsmm', 'smmclouduk')
 - `base_quantity`: Quantidade base por unidade do produto
-- `type`: Tipo de serviço (ex: 'followers', 'likes')
+- `type`: Tipo de serviço (ex: 'followers', 'likes', 'views', 'stories')
 
 ### Payments
 Armazena informações sobre pagamentos e pedidos:
@@ -92,6 +92,7 @@ Gerencia a interação com o Instagram via APIs de terceiros:
 - Verificação de privacidade de perfis
 - Obtenção de informações de mídia do usuário
 - Extração de IDs de posts para likes
+- Extração de IDs de reels para views
 - Pool de sessões para melhor performance
 
 ### TelegramSender
@@ -157,6 +158,9 @@ O sistema implementa restrições rigorosas para produtos brinde:
 - Agendador verifica pedidos pendentes a cada 2 minutos
 - Execução via API de SMM correspondente
 - Para likes: distribuição entre posts (máximo 4)
+- Para views: distribuição entre reels (máximo 4)
+- Para stories: processamento direto do perfil de stories
+- Para seguidores: processamento direto do perfil
 - Marcação como `finished=1` após sucesso
 
 ### **6. Atualização de Status**
@@ -332,3 +336,19 @@ Recomenda-se fazer backup regular do banco de dados, especialmente antes de atua
 ## Licença
 
 Este projeto é licenciado sob [sua licença] - veja o arquivo LICENSE para detalhes.
+
+## Frontend React (Painel de Controle)
+
+O projeto inclui um painel web para gerenciar pagamentos e produtos via interface gráfica.
+
+- Localização: `frontend/`
+- Stack: React + Material-UI + Axios
+- Comandos principais:
+  ```bash
+  cd frontend
+  npm install
+  npm run dev # ou npm start
+  ```
+- O painel consome os endpoints REST já existentes da API Flask.
+
+---

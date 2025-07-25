@@ -120,6 +120,96 @@ def process_pending_payments():
                         logging.error(f"Error processing likes for payment {payment.id}: {str(e)}")
                         continue
 
+                # Verificar se o tipo é 'views' para processamento especial de reels
+                elif product.type == 'views':
+                    try:
+                        # Usando o pool para obter os reels
+                        reel_list = InstagramService.get_last_4_reel_ids(payment.customization)
+                        
+                        num_reels = len(reel_list)
+                        if num_reels == 0:
+                            logging.error(f"No reels found for username {payment.customization} in payment {payment.id}")
+                            continue
+
+                        # Calcular a quantidade por reel (dividido pelo número real de reels)
+                        total_quantity = product.base_quantity * payment.item_quantity
+                        quantity_per_reel = total_quantity // num_reels
+                        if quantity_per_reel == 0:
+                            logging.error(f"Quantity per reel too low ({quantity_per_reel}) for payment {payment.id}")
+                            continue
+
+                        # Processar cada um dos reels existentes (até 4)
+                        all_orders_successful = True
+                        for reel in reel_list[:4]:  # Garantir no máximo 4
+                            reel_url = f"https://www.instagram.com/reel/{reel}/"
+                            url = f"{api_config['base_url']}"
+                            params = {
+                                'key': api_config['api_key'],
+                                'action': 'add',
+                                'service': product.service_id,
+                                'link': reel_url,
+                                'quantity': quantity_per_reel
+                            }
+                            response = requests.post(url, data=params)
+                            if response.status_code == 200:
+                                try:
+                                    response_data = response.json()
+                                    if response_data.get('order'):
+                                        logging.info(f"Order placed for {reel_url} with {quantity_per_reel} views in payment {payment.id}")
+                                    else:
+                                        logging.error(f"API response missing order ID for {reel_url} in payment {payment.id}: {response.text}")
+                                        telegram.send(f"Erro ao adicionar views {response.text} na {product.api}")
+                                        all_orders_successful = False
+                                except ValueError:
+                                    logging.error(f"Invalid JSON response for {reel_url} in payment {payment.id}: {response.text}")
+                                    all_orders_successful = False
+                            else:
+                                logging.error(f"API call failed for {reel_url} in payment {payment.id}: {response.status_code} - {response.text}")
+                                all_orders_successful = False
+
+                        # Marcar como concluído apenas se todos os pedidos foram bem-sucedidos
+                        if all_orders_successful:
+                            payment.finished = 1
+                            session.commit()
+                            logging.info(f"All views orders placed successfully for payment {payment.id}")
+
+                    except Exception as e:
+                        logging.error(f"Error processing views for payment {payment.id}: {str(e)}")
+                        continue
+
+                # Verificar se o tipo é 'stories' para processamento especial
+                elif product.type == 'stories':
+                    try:
+                        # URL específica para stories do Instagram
+                        stories_url = f"https://www.instagram.com/stories/{payment.customization}/"
+                        url = f"{api_config['base_url']}"
+                        params = {
+                            'key': api_config['api_key'],
+                            'action': 'add',
+                            'service': product.service_id,
+                            'link': stories_url,
+                            'quantity': product.base_quantity * payment.item_quantity
+                        }
+                        response = requests.post(url, data=params)
+                        if response.status_code == 200:
+                            try:
+                                response_data = response.json()
+                                if response_data.get('order'):
+                                    payment.finished = 1
+                                    session.commit()
+                                    logging.info(f"Stories order placed successfully for {stories_url} with {product.base_quantity * payment.item_quantity} views in payment {payment.id}")
+                                else:
+                                    logging.error(f"API response missing order ID for stories in payment {payment.id}: {response.text}")
+                                    telegram.send(f"Erro ao adicionar views de stories {response.text} na {product.api}")
+                            except ValueError:
+                                logging.error(f"Invalid JSON response for stories in payment {payment.id}: {response.text}")
+                        else:
+                            logging.error(f"API call failed for stories in payment {payment.id}: {response.status_code} - {response.text}")
+
+                    except Exception as e:
+                        logging.error(f"Error processing stories for payment {payment.id}: {str(e)}")
+                        continue
+
                 # Processamento padrão para outros tipos (ex.: seguidores)
                 else:
                     url = f"{api_config['base_url']}"

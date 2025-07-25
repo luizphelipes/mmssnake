@@ -222,6 +222,51 @@ class InstagramService:
             logger.error(f"Erro inesperado ao buscar posts de {username}: {e}")
             return []
 
+    @staticmethod
+    @timed_lru_cache(seconds=300, maxsize=100)
+    def get_last_4_reel_ids(username: str, account_id: str = None) -> list:
+        """
+        Obtém os IDs dos últimos 4 reels de um usuário do Instagram.
+        Tenta Instagrapi primeiro, se falhar usa API externa como fallback.
+        """
+        instance = get_instagram_service()
+        
+        # Tenta Instagrapi primeiro
+        client = instance._get_client(account_id)
+        if client:
+            success, result = instance._try_instagrapi_first(
+                lambda: [media.code for media in client.user_medias(
+                    client.user_id_from_username(username), 20  # Busca mais mídias para filtrar reels
+                ) if hasattr(media, 'media_type') and media.media_type == 2]  # Tipo 2 = Reel
+            )
+            if success:
+                reels = result[:4]  # Limita a 4 reels
+                logger.info(f"Reels obtidos via Instagrapi para {username}: {len(reels)} reels")
+                return reels
+        
+        # Fallback para API externa
+        api_host = "instagram230.p.rapidapi.com"
+        url = f"https://{api_host}/user/reels?username={username}"
+        headers = {
+            "X-Rapidapi-Key": os.getenv("INSTAGRAM230_API"),
+            "X-Rapidapi-Host": api_host
+        }
+
+        try:
+            response = requests.get(url, headers=headers)
+            response.raise_for_status()
+            data = response.json()
+            items = data.get('items', [])
+            reels = [item['code'] for item in items[:4] if 'code' in item]
+            logger.info(f"Reels obtidos via API para {username}: {len(reels)} reels")
+            return reels
+        except requests.exceptions.HTTPError as e:
+            logger.error(f"Erro HTTP ao buscar reels de {username}: {e}")
+            return []
+        except Exception as e:
+            logger.error(f"Erro inesperado ao buscar reels de {username}: {e}")
+            return []
+
 # Singleton para facilitar o acesso ao serviço em várias partes do código
 _instance = InstagramService()
 

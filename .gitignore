@@ -42,6 +42,7 @@ poetry.lock
 
 # dotenv
 .env.*
+.env
 !env.example
 
 # compiled C files

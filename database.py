@@ -11,9 +11,16 @@ logger = logging.getLogger(__name__)
 # Obter URL do banco de dados do .env
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///mmssnake.db")
 
+# Forçar uso de SQLite se não houver suporte ao PostgreSQL
+if DATABASE_URL and DATABASE_URL.startswith("postgres"):
+    logger.warning("PostgreSQL não está disponível. Usando SQLite como fallback.")
+    DATABASE_URL = "sqlite:///mmssnake.db"
+
 # Se não houver DATABASE_URL configurado, usar SQLite local
 if not DATABASE_URL or DATABASE_URL == "":
     DATABASE_URL = "sqlite:///mmssnake.db"
+
+logger.info(f"Usando banco de dados: {DATABASE_URL}")
 
 # Configurar engine
 engine = create_engine(

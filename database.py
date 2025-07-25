@@ -8,18 +8,14 @@ load_dotenv()
 
 logger = logging.getLogger(__name__)
 
-# Obter URL do banco de dados
-DATABASE_URL = os.getenv("DATABASE_URL")
+# Obter URL do banco de dados do .env
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///mmssnake.db")
 
-# Ajustar a URL para psycopg2 + SSL
-if DATABASE_URL and DATABASE_URL.startswith("postgres://"):
-    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+psycopg2://", 1)
+# Se não houver DATABASE_URL configurado, usar SQLite local
+if not DATABASE_URL or DATABASE_URL == "":
+    DATABASE_URL = "sqlite:///mmssnake.db"
 
-# Adicionar parâmetros SSL diretamente na URL (se necessário)
-# if not DATABASE_URL.endswith("?sslmode=require"):
-#     DATABASE_URL += "?sslmode=require"  # Apenas se o servidor exigir SSL
-
-# Configurar engine sem o parâmetro 'ssl' inválido
+# Configurar engine
 engine = create_engine(
     DATABASE_URL,
     echo=True,

@@ -1,7 +1,8 @@
 from flask import Blueprint, jsonify, request
 from database import Session
+import logging
 from models.base import Payments, ProductServices
-from services.telegram_sender import telegram
+from contextlib import contextmanager
 
 payments_bp = Blueprint('payments', __name__)
 
@@ -100,7 +101,7 @@ def delete_payment(id):
         session.delete(payment)
         session.commit()
         return jsonify({'message': 'Pagamento apagado com sucesso'}), 200
-        telegram.send("Deu certo!")
+        logging.info("Deu certo!")
     except Exception as e:
         session.rollback()
         return jsonify({'error': str(e)}), 500

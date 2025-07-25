@@ -10,7 +10,6 @@ import os
 from utils import SMM_CONFIG
 from dotenv import load_dotenv
 from services.yampi_client import YampiClient
-from services.telegram_sender import telegram
 load_dotenv()
 
 
@@ -97,7 +96,7 @@ def process_pending_payments():
                                         logging.info(f"Order placed for {post_url} with {quantity_per_post} likes in payment {payment.id}")
                                     else:
                                         logging.error(f"API response missing order ID for {post_url} in payment {payment.id}: {response.text}")
-                                        telegram.send(f"Erro ao adicionar likes {response.text} na {product.api}")
+                                        logging.error(f"Erro ao adicionar likes {response.text} na {product.api}")
                                         all_orders_successful = False
                                 except ValueError:
                                     logging.error(f"Invalid JSON response for {post_url} in payment {payment.id}: {response.text}")
@@ -158,7 +157,7 @@ def process_pending_payments():
                                         logging.info(f"Order placed for {reel_url} with {quantity_per_reel} views in payment {payment.id}")
                                     else:
                                         logging.error(f"API response missing order ID for {reel_url} in payment {payment.id}: {response.text}")
-                                        telegram.send(f"Erro ao adicionar views {response.text} na {product.api}")
+                                        logging.error(f"Erro ao adicionar views {response.text} na {product.api}")
                                         all_orders_successful = False
                                 except ValueError:
                                     logging.error(f"Invalid JSON response for {reel_url} in payment {payment.id}: {response.text}")
@@ -200,7 +199,7 @@ def process_pending_payments():
                                     logging.info(f"Stories order placed successfully for {stories_url} with {product.base_quantity * payment.item_quantity} views in payment {payment.id}")
                                 else:
                                     logging.error(f"API response missing order ID for stories in payment {payment.id}: {response.text}")
-                                    telegram.send(f"Erro ao adicionar views de stories {response.text} na {product.api}")
+                                    logging.error(f"Erro ao adicionar views de stories {response.text} na {product.api}")
                             except ValueError:
                                 logging.error(f"Invalid JSON response for stories in payment {payment.id}: {response.text}")
                         else:
@@ -230,7 +229,7 @@ def process_pending_payments():
                                 logging.info(f"Order placed successfully for payment {payment.id}: {response.text}")
                             else:
                                 logging.error(f"API response missing order ID for payment {payment.id}: {response.text}")
-                                telegram.send(f"API response missing order ID for payment {payment.id}: {response.text}")
+                                logging.error(f"API response missing order ID for payment {payment.id}: {response.text}")
                         except ValueError:
                             logging.error(f"Invalid JSON response for payment {payment.id}: {response.text}")
                     else:

@@ -13,19 +13,17 @@ Este projeto é um sistema de automação para processar pedidos da plataforma e
 - **Gestão de Produtos**: Armazena e gerencia configurações de produtos/serviços
 - **Sistema de Restrição de Brindes**: Controle rigoroso para produtos gratuitos (SKU: 9R628ZD4Y)
 - **Verificação por IP**: Prevenção de abusos através de controle por endereço IP
-- **Notificações Telegram**: Envio de logs e alertas via Telegram
 - **Webhook Externo**: Encaminhamento de webhooks para sistemas externos
 
 ## Tecnologias Utilizadas
 
 - **Framework Web**: Flask
 - **ORM**: SQLAlchemy
-- **Banco de Dados**: PostgreSQL
+- **Banco de Dados**: SQLite (configurável via DATABASE_URL)
 - **Tarefas Agendadas**: Biblioteca `schedule`
 - **Processamento de Requisições**: Requests
 - **Deployment**: Railway
 - **Containerização**: Docker & Docker Compose
-- **Notificações**: Telegram Bot API
 
 ## Estrutura do Projeto
 
@@ -43,7 +41,6 @@ Este projeto é um sistema de automação para processar pedidos da plataforma e
 │   ├── __init__.py
 │   ├── instagram_service.py  # Interação com APIs do Instagram
 │   ├── scheduler.py      # Agendador de tarefas periódicas
-│   ├── telegram_sender.py # Envio de notificações via Telegram
 │   └── yampi_client.py   # Cliente para API da Yampi
 ├── utils.py              # Funções utilitárias
 ├── docker-compose.yml    # Configuração Docker Compose
@@ -94,12 +91,6 @@ Gerencia a interação com o Instagram via APIs de terceiros:
 - Extração de IDs de posts para likes
 - Extração de IDs de reels para views
 - Pool de sessões para melhor performance
-
-### TelegramSender
-Envio de notificações e logs via Telegram:
-- Alertas de erros críticos
-- Logs de processamento de webhooks
-- Notificações de status de pedidos
 
 ### Scheduler
 Gerencia as tarefas periódicas:
@@ -168,50 +159,48 @@ O sistema implementa restrições rigorosas para produtos brinde:
 - Atualização de `status_alias` no banco local
 - Preservação do histórico (não apaga registros)
 
-## Configuração e Instalação
+## Configuração do Ambiente
 
-### Pré-requisitos
-- Python 3.10+
-- PostgreSQL
-- Docker & Docker Compose (opcional)
-- Credenciais da Yampi (API Key e Secret Key)
-- Chaves de API para serviços de Instagram
-- Token do Bot do Telegram (opcional)
+### 1. Variáveis de Ambiente
 
-### Variáveis de Ambiente
-Crie um arquivo `.env` com as seguintes variáveis:
+Crie um arquivo `.env` na raiz do projeto com as seguintes variáveis:
 
-```env
-# Yampi Configuration
+```bash
+# Banco de Dados (opcional - padrão: SQLite local)
+DATABASE_URL="sqlite:///mmssnake.db"
+
+# Yampi API
 YAMPI_API_KEY="sua_api_key"
 YAMPI_SECRET_KEY="sua_secret_key"
-YAMPI_BASE_URL="https://api.dooki.com.br/v2/seu-alias/orders"
-YAMPI_WEBHOOK_SECRET="seu_webhook_secret"
+YAMPI_BASE_URL="https://api.yampi.com.br"
+YAMPI_WEBHOOK_SECRET="sua_chave_secreta_webhook"
 
-# Database
-DATABASE_URL="postgresql://usuario:senha@host:porta/database"
+# APIs SMM
+MACHINESMM_API_KEY="sua_api_key_machinesmm"
+WORLDSMM_API_KEY="sua_api_key_worldsmm"
+SMMCLOUDUK_API_KEY="sua_api_key_smmclouduk"
 
-# Instagram APIs
-LOOTER_API="sua_api_key"
-INTAGRAM230_API="sua_api_key"
-API_HOST_INSTA230="https://api.insta230.com"
+# APIs Instagram
+LOOTER_API="sua_api_key_looter"
+INSTAGRAM230_API="sua_api_key_instagram230"
 
-# Telegram (opcional)
-TELEGRAM_BOT_TOKEN="seu_bot_token"
-TELEGRAM_CHAT_ID="seu_chat_id"
-
-# External Webhook (opcional)
-FORWARD_WEBHOOK_URL="https://seu-endpoint.com/webhook"
-
-# SMM APIs
-MACHINESMM_API_KEY="sua_api_key"
-WORLDSMM_API_KEY="sua_api_key"
-SMMCLOUDUK_API_KEY="sua_api_key"
+# IDs de Sessão do Instagram (opcional)
+INSTAGRAM_SESSION_ID_1="sua_session_id_1"
+INSTAGRAM_SESSION_ID_2="sua_session_id_2"
+# ... adicione quantas contas precisar
 ```
 
-**IMPORTANTE:** Nunca comite o arquivo `.env` no repositório. Adicione-o ao `.gitignore`.
+### 2. Configuração do Banco de Dados
 
-### Instalação Local
+O sistema suporta diferentes tipos de banco de dados através da variável `DATABASE_URL`:
+
+- **SQLite (padrão)**: `sqlite:///mmssnake.db`
+- **PostgreSQL**: `postgresql://usuario:senha@host:porta/database`
+- **MySQL**: `mysql://usuario:senha@host:porta/database`
+
+Se `DATABASE_URL` não estiver configurado, o sistema usará SQLite local automaticamente.
+
+### 3. Instalação Local
 
 1. Clone o repositório:
    ```bash
@@ -237,7 +226,7 @@ SMMCLOUDUK_API_KEY="sua_api_key"
    python app.py
    ```
 
-### Instalação com Docker
+### 4. Instalação com Docker
 
 1. Clone o repositório e configure o `.env`
 
@@ -251,7 +240,7 @@ SMMCLOUDUK_API_KEY="sua_api_key"
    docker-compose logs -f web
    ```
 
-### Deployment no Railway
+### 5. Deployment no Railway
 
 1. Conecte seu repositório GitHub ao Railway
 2. Configure as variáveis de ambiente na plataforma Railway

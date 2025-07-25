@@ -31,6 +31,7 @@ Thumbs.db
 # SQLite database
 *.sqlite3
 *.db
+mmssnake.db
 
 # System files
 *.swp

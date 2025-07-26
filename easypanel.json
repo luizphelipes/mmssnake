@@ -1,0 +1,33 @@
+{
+  "name": "mmssnake",
+  "description": "Sistema de Automação de Serviços Instagram",
+  "version": "1.0.0",
+  "type": "docker",
+  "port": 5000,
+  "environment": {
+    "DATABASE_URL": "sqlite:///mmssnake.db",
+    "YAMPI_API_KEY": "",
+    "YAMPI_SECRET_KEY": "",
+    "YAMPI_BASE_URL": "https://api.yampi.com.br",
+    "YAMPI_WEBHOOK_SECRET": "",
+    "MACHINESMM_API_KEY": "",
+    "WORLDSMM_API_KEY": "",
+    "SMMCLOUDUK_API_KEY": "",
+    "LOOTER_API": "",
+    "INSTAGRAM230_API": "",
+    "INSTAGRAM_SESSION_ID_1": "",
+    "INSTAGRAM_SESSION_ID_2": ""
+  },
+  "volumes": {
+    "/app/logs": "./logs",
+    "/app/data": "./data"
+  },
+  "healthcheck": {
+    "test": ["CMD", "curl", "-f", "http://localhost:5000/"],
+    "interval": "30s",
+    "timeout": "10s",
+    "retries": 3,
+    "start_period": "40s"
+  },
+  "restart": "unless-stopped"
+} 

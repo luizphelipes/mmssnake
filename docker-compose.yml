@@ -13,14 +13,24 @@ services:
       - LOOTER_API=${LOOTER_API}
       - INTAGRAM230_API=${INTAGRAM230_API}
       - YAMPI_WEBHOOK_SECRET=${YAMPI_WEBHOOK_SECRET}
+      - MACHINESMM_API_KEY=${MACHINESMM_API_KEY}
+      - WORLDSMM_API_KEY=${WORLDSMM_API_KEY}
+      - SMMCLOUDUK_API_KEY=${SMMCLOUDUK_API_KEY}
     volumes:
-      - .:/app
-    command: >
-      sh -c "python -c 'from database import initialize_database; initialize_database()' &&
-             gunicorn --bind 0.0.0.0:5000 --reload app:app"
+      - ./logs:/app/logs
+      - ./data:/app/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
   cloudflared:
     image: cloudflare/cloudflared:latest
     command: tunnel --no-autoupdate run --token eyJhIjoiNWM3OWQ0NGVmY2E0MjBhMmJiNmJlOWQxNTg1MjNlMjAiLCJ0IjoiMDQ2YWZiNTktMjRkMy00NDViLThhMWQtOTBkYjBkZTY0Njk4IiwicyI6IlltRTRPRFJrTVRFdFlqSTFPQzAwWmpoaUxUbGlOMkl0WlRrMU1EUTBOalV6WVdNMiJ9
     depends_on:
-      - web 
+      web:
+        condition: service_healthy
+    restart: unless-stopped

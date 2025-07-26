@@ -22,8 +22,8 @@ Este projeto é um sistema de automação para processar pedidos da plataforma e
 - **Banco de Dados**: SQLite (configurável via DATABASE_URL)
 - **Tarefas Agendadas**: Biblioteca `schedule`
 - **Processamento de Requisições**: Requests
-- **Deployment**: Railway
-- **Containerização**: Docker & Docker Compose
+- **Deployment**: Docker & Docker Compose
+- **Containerização**: Docker
 
 ## Estrutura do Projeto
 
@@ -45,10 +45,10 @@ Este projeto é um sistema de automação para processar pedidos da plataforma e
 ├── utils.py              # Funções utilitárias
 ├── docker-compose.yml    # Configuração Docker Compose
 ├── Dockerfile            # Configuração Docker
-├── Procfile              # Configuração para deployment
-├── railway.json          # Configuração do Railway
+├── Dockerfile.simple     # Dockerfile simplificado
+├── easypanel.json        # Configuração do Easypanel
 ├── requirements.txt      # Dependências do projeto
-└── runtime.txt           # Versão do Python para deployment
+└── .dockerignore         # Arquivos ignorados no build Docker
 ```
 
 ## Modelos de Dados
@@ -204,14 +204,14 @@ Se `DATABASE_URL` não estiver configurado, o sistema usará SQLite local automa
 
 1. Clone o repositório:
    ```bash
-   git clone [URL_DO_REPOSITORIO]
-   cd [NOME_DO_REPOSITORIO]
+   git clone <url-do-repositorio>
+   cd mmssnake
    ```
 
-2. Crie e ative um ambiente virtual:
+2. Configure o arquivo `.env`:
    ```bash
-   python -m venv venv
-   source venv/bin/activate  # No Windows: venv\Scripts\activate
+   cp env.example .env
+   # Edite o arquivo .env com suas configurações
    ```
 
 3. Instale as dependências:
@@ -219,9 +219,7 @@ Se `DATABASE_URL` não estiver configurado, o sistema usará SQLite local automa
    pip install -r requirements.txt
    ```
 
-4. Configure as variáveis de ambiente conforme descrito acima
-
-5. Execute a aplicação:
+4. Execute a aplicação:
    ```bash
    python app.py
    ```
@@ -235,16 +233,17 @@ Se `DATABASE_URL` não estiver configurado, o sistema usará SQLite local automa
    docker-compose up -d
    ```
 
-3. Para ver logs:
+3. Ou execute apenas o container:
    ```bash
-   docker-compose logs -f web
+   docker build -t mmssnake .
+   docker run -p 5000:5000 --env-file .env mmssnake
    ```
 
-### 5. Deployment no Railway
+### 5. Deployment no Easypanel
 
-1. Conecte seu repositório GitHub ao Railway
-2. Configure as variáveis de ambiente na plataforma Railway
-3. O deployment será feito automaticamente a partir do arquivo `railway.json`
+1. Conecte seu repositório GitHub ao Easypanel
+2. Configure as variáveis de ambiente conforme `easypanel.json`
+3. Use o `Dockerfile.simple` para maior compatibilidade
 
 ## Endpoints da API
 

@@ -19,11 +19,56 @@ Este projeto é um sistema de automação para processar pedidos da plataforma e
 
 - **Framework Web**: Flask
 - **ORM**: SQLAlchemy
-- **Banco de Dados**: SQLite (configurável via DATABASE_URL)
+- **Banco de Dados**: SQLite (padrão) / PostgreSQL (opcional)
 - **Tarefas Agendadas**: Biblioteca `schedule`
 - **Processamento de Requisições**: Requests
 - **Deployment**: Docker & Docker Compose
 - **Containerização**: Docker
+
+## Configuração do Banco de Dados
+
+### SQLite (Padrão)
+O sistema usa SQLite por padrão, que é adequado para desenvolvimento e pequenas aplicações:
+
+```bash
+DATABASE_URL="sqlite:///mmssnake.db"
+```
+
+### PostgreSQL (Recomendado para Produção)
+Para ambientes de produção, recomenda-se usar PostgreSQL:
+
+```bash
+# Exemplo de configuração PostgreSQL
+DATABASE_URL="postgresql://usuario:senha@localhost:5432/mmssnake"
+```
+
+#### Configuração com Docker Compose
+O arquivo `docker-compose.yml` inclui um serviço PostgreSQL opcional. Para ativá-lo:
+
+1. Descomente as linhas do serviço `postgres` no `docker-compose.yml`
+2. Descomente a linha `DATABASE_URL` do PostgreSQL no serviço `web`
+3. Descomente as linhas `depends_on` e `volumes`
+
+#### Tratamento de Erros PostgreSQL
+O sistema inclui tratamento detalhado de erros para PostgreSQL:
+
+- **Validação de Conexão**: Testa conectividade antes de usar
+- **Diagnóstico Detalhado**: Identifica problemas específicos (autenticação, database inexistente, etc.)
+- **Fallback Automático**: Usa SQLite se PostgreSQL não estiver disponível
+- **Logs Informativos**: Fornece informações detalhadas sobre problemas de conexão
+
+#### Teste de Conexão
+Execute o script de teste para validar a configuração PostgreSQL:
+
+```bash
+python test_postgresql.py
+```
+
+Este script irá:
+- Validar a conexão com PostgreSQL
+- Verificar se o driver psycopg2 está instalado
+- Testar a inicialização do banco de dados
+- Fornecer diagnóstico detalhado em caso de erro
 
 ## Estrutura do Projeto
 
@@ -31,6 +76,7 @@ Este projeto é um sistema de automação para processar pedidos da plataforma e
 ├── .env                  # Variáveis de ambiente (NÃO DEVE SER COMMITADO)
 ├── app.py                # Ponto de entrada da aplicação
 ├── database.py           # Configuração do banco de dados
+├── test_postgresql.py    # Script de teste para PostgreSQL
 ├── models/               # Modelos de dados
 │   └── base.py           # Definições das tabelas SQLAlchemy
 ├── routes/               # Rotas da API
@@ -97,6 +143,77 @@ Gerencia as tarefas periódicas:
 - Verificação de perfis pendentes a cada 10 minutos
 - Processamento de pagamentos pendentes a cada 2 minutos
 - Atualização de pedidos entregues 5x por dia (9h, 15h, 19h, 21h, 23h)
+
+## Exemplo de Uso com PostgreSQL
+
+### 1. Configuração Inicial
+
+Copie o arquivo de exemplo e configure as variáveis:
+
+```bash
+cp env.example .env
+```
+
+Edite o arquivo `.env` e configure o PostgreSQL:
+
+```bash
+# Para PostgreSQL local
+DATABASE_URL="postgresql://usuario:senha@localhost:5432/mmssnake"
+
+# Para PostgreSQL com Docker
+DATABASE_URL="postgresql://mmssnake_user:mmssnake_password@postgres:5432/mmssnake"
+```
+
+### 2. Teste de Conexão
+
+Execute o script de teste para verificar se tudo está funcionando:
+
+```bash
+python test_postgresql.py
+```
+
+### 3. Execução com Docker
+
+Para usar PostgreSQL com Docker Compose:
+
+```bash
+# Edite docker-compose.yml e descomente as linhas do PostgreSQL
+# Execute o sistema
+docker-compose up -d
+```
+
+### 4. Logs de Erro
+
+Se houver problemas com PostgreSQL, o sistema irá:
+
+1. **Detectar automaticamente** problemas de conexão
+2. **Fornecer diagnóstico detalhado** com códigos de erro PostgreSQL
+3. **Fazer fallback para SQLite** automaticamente
+4. **Registrar logs informativos** para troubleshooting
+
+Exemplo de log de erro:
+
+```
+================================================================================
+ERRO DE CONEXÃO POSTGRESQL
+================================================================================
+Detalhes do erro: Erro de autenticação PostgreSQL (código 28P01): password authentication failed for user "usuario"
+Informações da conexão:
+  Host: localhost
+  Porta: 5432
+  Database: mmssnake
+  Usuário: usuario
+  Senha configurada: Sim
+Soluções possíveis:
+1. Verificar se o PostgreSQL está rodando
+2. Verificar se as credenciais estão corretas
+3. Verificar se o database existe
+4. Verificar se o usuário tem permissões adequadas
+5. Verificar se a porta está acessível
+6. Verificar se o driver psycopg2 está instalado
+================================================================================
+FALLBACK: Usando SQLite como banco de dados alternativo
+```
 
 ## Sistema de Restrição de Brindes
 

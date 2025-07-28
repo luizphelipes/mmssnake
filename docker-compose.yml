@@ -1,12 +1,28 @@
 version: '3.8'
 
 services:
+  # Serviço PostgreSQL (opcional - descomente se quiser usar PostgreSQL)
+  # postgres:
+  #   image: postgres:15-alpine
+  #   environment:
+  #     POSTGRES_DB: mmssnake
+  #     POSTGRES_USER: mmssnake_user
+  #     POSTGRES_PASSWORD: mmssnake_password
+  #   ports:
+  #     - "5432:5432"
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+  #   restart: unless-stopped
+
   web:
     build: .
     ports:
       - "127.0.0.1:5000:5000"
     environment:
+      # Para SQLite (padrão):
       - DATABASE_URL=sqlite:///mmssnake.db
+      # Para PostgreSQL (descomente se usar o serviço postgres acima):
+      # - DATABASE_URL=postgresql://mmssnake_user:mmssnake_password@postgres:5432/mmssnake
       - YAMPI_API_KEY=${YAMPI_API_KEY}
       - YAMPI_SECRET_KEY=${YAMPI_SECRET_KEY}
       - YAMPI_BASE_URL=${YAMPI_BASE_URL}
@@ -20,3 +36,10 @@ services:
       - ./logs:/app/logs
       - ./data:/app/data
     restart: unless-stopped
+    # Descomente se usar PostgreSQL:
+    # depends_on:
+    #   - postgres
+
+# Descomente se usar PostgreSQL:
+# volumes:
+#   postgres_data:

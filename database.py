@@ -15,6 +15,10 @@ def validate_postgresql_connection(database_url):
     Valida a conexão com PostgreSQL e retorna detalhes do erro se houver.
     """
     try:
+        # Normalizar URL para usar postgresql://
+        if database_url.startswith("postgres://"):
+            database_url = database_url.replace("postgres://", "postgresql://", 1)
+        
         # Tentar criar engine temporário para testar conexão
         test_engine = create_engine(
             database_url,
@@ -65,8 +69,12 @@ def parse_postgresql_url(database_url):
     Extrai informações da URL do PostgreSQL para diagnóstico.
     """
     try:
-        # Remover prefixo postgresql:// ou postgres://
-        clean_url = database_url.replace('postgresql://', '').replace('postgres://', '')
+        # Normalizar URL
+        if database_url.startswith("postgres://"):
+            database_url = database_url.replace("postgres://", "postgresql://", 1)
+        
+        # Remover prefixo postgresql://
+        clean_url = database_url.replace('postgresql://', '')
         
         # Separar credenciais e host
         if '@' in clean_url:
@@ -107,6 +115,11 @@ DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///mmssnake.db")
 if DATABASE_URL and (DATABASE_URL.startswith("postgresql://") or DATABASE_URL.startswith("postgres://")):
     logger.info("Detectada configuração PostgreSQL. Validando conexão...")
     
+    # Normalizar URL para usar postgresql://
+    if DATABASE_URL.startswith("postgres://"):
+        DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+        logger.info("URL normalizada para postgresql://")
+    
     # Extrair informações da URL para diagnóstico
     url_info = parse_postgresql_url(DATABASE_URL)
     if url_info:
@@ -136,6 +149,7 @@ if DATABASE_URL and (DATABASE_URL.startswith("postgresql://") or DATABASE_URL.st
         logger.error("4. Verificar se o usuário tem permissões adequadas")
         logger.error("5. Verificar se a porta está acessível")
         logger.error("6. Verificar se o driver psycopg2 está instalado")
+        logger.error("7. Verificar se a URL usa postgresql:// em vez de postgres://")
         logger.error("=" * 80)
         
         logger.warning("FALLBACK: Usando SQLite como banco de dados alternativo")

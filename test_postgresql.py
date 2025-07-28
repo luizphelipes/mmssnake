@@ -36,6 +36,12 @@ def test_postgresql_connection():
         print("ℹ️  URL não é PostgreSQL. Teste não aplicável.")
         return True
     
+    # Normalizar URL se necessário
+    if database_url.startswith("postgres://"):
+        original_url = database_url
+        database_url = database_url.replace("postgres://", "postgresql://", 1)
+        print(f"ℹ️  URL normalizada: {original_url} → {database_url}")
+    
     # Extrair informações da URL
     url_info = parse_postgresql_url(database_url)
     if url_info:
@@ -56,6 +62,18 @@ def test_postgresql_connection():
     else:
         print("❌ Falha na conexão PostgreSQL:")
         print(f"   {error_details}")
+        
+        # Sugestões específicas baseadas no erro
+        if "Can't load plugin" in error_details:
+            print("\n💡 Sugestão: Verifique se o psycopg2-binary está instalado:")
+            print("   pip install psycopg2-binary")
+        elif "authentication failed" in error_details:
+            print("\n💡 Sugestão: Verifique as credenciais do PostgreSQL")
+        elif "connection refused" in error_details:
+            print("\n💡 Sugestão: Verifique se o PostgreSQL está rodando")
+        elif "database" in error_details and "does not exist" in error_details:
+            print("\n💡 Sugestão: Crie o database especificado")
+        
         return False
 
 def test_database_initialization():

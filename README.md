@@ -42,6 +42,8 @@ Para ambientes de produção, recomenda-se usar PostgreSQL:
 DATABASE_URL="postgresql://usuario:senha@localhost:5432/mmssnake"
 ```
 
+**Importante**: Use sempre `postgresql://` em vez de `postgres://` na URL. O sistema automaticamente normaliza URLs que usam `postgres://` para `postgresql://`.
+
 #### Configuração com Docker Compose
 O arquivo `docker-compose.yml` inclui um serviço PostgreSQL opcional. Para ativá-lo:
 
@@ -53,6 +55,7 @@ O arquivo `docker-compose.yml` inclui um serviço PostgreSQL opcional. Para ativ
 O sistema inclui tratamento detalhado de erros para PostgreSQL:
 
 - **Validação de Conexão**: Testa conectividade antes de usar
+- **Normalização de URL**: Converte automaticamente `postgres://` para `postgresql://`
 - **Diagnóstico Detalhado**: Identifica problemas específicos (autenticação, database inexistente, etc.)
 - **Fallback Automático**: Usa SQLite se PostgreSQL não estiver disponível
 - **Logs Informativos**: Fornece informações detalhadas sobre problemas de conexão
@@ -70,6 +73,18 @@ Este script irá:
 - Testar a inicialização do banco de dados
 - Fornecer diagnóstico detalhado em caso de erro
 
+#### Instalação de Dependências
+Se você encontrar problemas com o driver PostgreSQL, execute o script de instalação:
+
+```bash
+python install_dependencies.py
+```
+
+Este script irá:
+- Verificar se todas as dependências estão instaladas
+- Instalar automaticamente dependências faltantes
+- Testar se o SQLAlchemy consegue usar o driver PostgreSQL
+
 ## Estrutura do Projeto
 
 ```
@@ -77,6 +92,7 @@ Este script irá:
 ├── app.py                # Ponto de entrada da aplicação
 ├── database.py           # Configuração do banco de dados
 ├── test_postgresql.py    # Script de teste para PostgreSQL
+├── install_dependencies.py # Script de instalação de dependências
 ├── models/               # Modelos de dados
 │   └── base.py           # Definições das tabelas SQLAlchemy
 ├── routes/               # Rotas da API

@@ -405,8 +405,95 @@ Se `DATABASE_URL` não estiver configurado, o sistema usará SQLite local automa
 
 ### Produtos
 - `GET /products`: Lista todos os produtos
-- `POST /products`: Adiciona um novo produto
+- `POST /products`: Adiciona um ou múltiplos produtos
 - `DELETE /products/<sku>`: Deleta um produto
+
+#### Adicionar Produtos
+
+O endpoint `POST /products` aceita tanto um produto único quanto uma lista de produtos:
+
+**Produto Único (formato atual):**
+```json
+{
+    "sku": "PROD001",
+    "service_id": 123,
+    "api": "machinesmm",
+    "base_quantity": 1000,
+    "type": "followers"
+}
+```
+
+**Múltiplos Produtos (novo formato):**
+```json
+[
+    {
+        "sku": "PROD001",
+        "service_id": 123,
+        "api": "machinesmm",
+        "base_quantity": 1000,
+        "type": "followers"
+    },
+    {
+        "sku": "PROD002",
+        "service_id": 456,
+        "api": "worldsmm",
+        "base_quantity": 500,
+        "type": "likes"
+    },
+    {
+        "sku": "PROD003",
+        "service_id": 789,
+        "api": "smmclouduk",
+        "base_quantity": 200,
+        "type": "views"
+    }
+]
+```
+
+**Respostas:**
+
+Produto único:
+```json
+{
+    "message": "Produto adicionado com sucesso"
+}
+```
+
+Múltiplos produtos:
+```json
+{
+    "message": "3 produtos adicionados com sucesso",
+    "added_products": [
+        {
+            "sku": "PROD001",
+            "service_id": 123,
+            "api": "machinesmm",
+            "base_quantity": 1000,
+            "type": "followers"
+        },
+        {
+            "sku": "PROD002",
+            "service_id": 456,
+            "api": "worldsmm",
+            "base_quantity": 500,
+            "type": "likes"
+        },
+        {
+            "sku": "PROD003",
+            "service_id": 789,
+            "api": "smmclouduk",
+            "base_quantity": 200,
+            "type": "views"
+        }
+    ]
+}
+```
+
+**Validação:**
+- Todos os campos obrigatórios devem estar presentes
+- SKUs duplicados não são permitidos
+- Se houver erros de validação, todos os erros são retornados de uma vez
+- Apenas produtos válidos são adicionados ao banco de dados
 
 ## Manutenção e Troubleshooting
 

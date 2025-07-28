@@ -132,26 +132,76 @@ def add_products():
         data = request.get_json()  # Tenta obter o JSON da requisição
         required_fields = ['sku', 'service_id', 'api', 'base_quantity', 'type']
         
-        # Verifica se todos os campos obrigatórios estão presentes
-        for field in required_fields:
-            if field not in data:
-                return jsonify({'error': f'Campo {field} é obrigatório'}), 400
-
-        # Verifica se o SKU já existe
-        if session.query(ProductServices).filter_by(sku=data['sku']).first():
-            return jsonify({'error': 'Produto com este SKU já existe'}), 409
-
-        # Cria o novo produto
-        new_product = ProductServices(
-            sku=data['sku'],
-            service_id=data['service_id'],
-            api=data['api'],
-            base_quantity=data['base_quantity'],
-            type=data['type']
-        )
-        session.add(new_product)
+        # Verificar se é uma lista de produtos ou um produto único
+        products_to_add = []
+        if isinstance(data, list):
+            # Múltiplos produtos
+            products_to_add = data
+        else:
+            # Produto único (mantém compatibilidade)
+            products_to_add = [data]
+        
+        if not products_to_add:
+            return jsonify({'error': 'Nenhum produto fornecido'}), 400
+        
+        # Validar todos os produtos antes de adicionar
+        validated_products = []
+        errors = []
+        
+        for i, product_data in enumerate(products_to_add):
+            # Verifica se todos os campos obrigatórios estão presentes
+            missing_fields = []
+            for field in required_fields:
+                if field not in product_data:
+                    missing_fields.append(field)
+            
+            if missing_fields:
+                errors.append(f'Produto {i+1}: Campos obrigatórios ausentes: {", ".join(missing_fields)}')
+                continue
+            
+            # Verifica se o SKU já existe
+            if session.query(ProductServices).filter_by(sku=product_data['sku']).first():
+                errors.append(f'Produto {i+1}: SKU {product_data["sku"]} já existe')
+                continue
+            
+            validated_products.append(product_data)
+        
+        # Se há erros de validação, retorna todos os erros
+        if errors:
+            return jsonify({
+                'error': 'Erros de validação encontrados',
+                'details': errors
+            }), 400
+        
+        # Adicionar todos os produtos válidos
+        added_products = []
+        for product_data in validated_products:
+            new_product = ProductServices(
+                sku=product_data['sku'],
+                service_id=product_data['service_id'],
+                api=product_data['api'],
+                base_quantity=product_data['base_quantity'],
+                type=product_data['type']
+            )
+            session.add(new_product)
+            added_products.append({
+                'sku': product_data['sku'],
+                'service_id': product_data['service_id'],
+                'api': product_data['api'],
+                'base_quantity': product_data['base_quantity'],
+                'type': product_data['type']
+            })
+        
         session.commit()
-        return jsonify({'message': 'Produto adicionado com sucesso'}), 201
+        
+        # Retorna resposta baseada no número de produtos
+        if len(validated_products) == 1:
+            return jsonify({'message': 'Produto adicionado com sucesso'}), 201
+        else:
+            return jsonify({
+                'message': f'{len(validated_products)} produtos adicionados com sucesso',
+                'added_products': added_products
+            }), 201
 
     except Exception as e:
         session.rollback()  # Agora session está acessível

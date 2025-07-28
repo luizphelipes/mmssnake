@@ -49,6 +49,8 @@ def test_postgresql_connection():
         print(f"  Host: {url_info['host']}")
         print(f"  Porta: {url_info['port']}")
         print(f"  Database: {url_info['database']}")
+        if url_info.get('query_params'):
+            print(f"  Parâmetros: {url_info['query_params']}")
         print(f"  Usuário: {url_info['username']}")
         print(f"  Senha configurada: {'Sim' if url_info['has_password'] else 'Não'}")
     
@@ -67,6 +69,9 @@ def test_postgresql_connection():
         if "Can't load plugin" in error_details:
             print("\n💡 Sugestão: Verifique se o psycopg2-binary está instalado:")
             print("   pip install psycopg2-binary")
+        elif "Not an executable object" in error_details:
+            print("\n💡 Sugestão: Erro de execução SQL. Verifique a versão do SQLAlchemy:")
+            print("   pip install --upgrade SQLAlchemy")
         elif "authentication failed" in error_details:
             print("\n💡 Sugestão: Verifique as credenciais do PostgreSQL")
         elif "connection refused" in error_details:

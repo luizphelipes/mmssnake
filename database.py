@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import OperationalError, ProgrammingError, InvalidRequestError
 import os
@@ -29,9 +29,9 @@ def validate_postgresql_connection(database_url):
             max_overflow=0
         )
         
-        # Testar conexão
+        # Testar conexão usando text() para a query
         with test_engine.connect() as connection:
-            connection.execute("SELECT 1")
+            connection.execute(text("SELECT 1"))
         
         test_engine.dispose()
         return True, None
@@ -87,9 +87,17 @@ def parse_postgresql_url(database_url):
             username, password = '', ''
             rest = clean_url
         
-        # Separar host e database
+        # Separar host e database (incluindo parâmetros de query)
         if '/' in rest:
-            host_part, database = rest.split('/', 1)
+            host_part, database_part = rest.split('/', 1)
+            
+            # Remover parâmetros de query do database
+            if '?' in database_part:
+                database, query_params = database_part.split('?', 1)
+            else:
+                database = database_part
+                query_params = ''
+            
             if ':' in host_part:
                 host, port = host_part.split(':', 1)
             else:
@@ -97,12 +105,14 @@ def parse_postgresql_url(database_url):
         else:
             host, port = rest, '5432'
             database = ''
+            query_params = ''
         
         return {
             'username': username,
             'host': host,
             'port': port,
             'database': database,
+            'query_params': query_params,
             'has_password': bool(password)
         }
     except Exception:
@@ -139,6 +149,8 @@ if DATABASE_URL and (DATABASE_URL.startswith("postgresql://") or DATABASE_URL.st
             logger.error(f"  Host: {url_info['host']}")
             logger.error(f"  Porta: {url_info['port']}")
             logger.error(f"  Database: {url_info['database']}")
+            if url_info['query_params']:
+                logger.error(f"  Parâmetros: {url_info['query_params']}")
             logger.error(f"  Usuário: {url_info['username']}")
             logger.error(f"  Senha configurada: {'Sim' if url_info['has_password'] else 'Não'}")
         

@@ -85,6 +85,19 @@ Este script irá:
 - Instalar automaticamente dependências faltantes
 - Testar se o SQLAlchemy consegue usar o driver PostgreSQL
 
+#### Diagnóstico Específico
+Para problemas específicos de PostgreSQL, execute o script de diagnóstico:
+
+```bash
+python diagnose_postgresql.py
+```
+
+Este script irá:
+- Verificar dependências específicas do PostgreSQL
+- Testar criação de engine e conexão
+- Verificar versão e permissões do PostgreSQL
+- Fornecer diagnóstico detalhado de problemas específicos
+
 ## Estrutura do Projeto
 
 ```
@@ -93,6 +106,7 @@ Este script irá:
 ├── database.py           # Configuração do banco de dados
 ├── test_postgresql.py    # Script de teste para PostgreSQL
 ├── install_dependencies.py # Script de instalação de dependências
+├── diagnose_postgresql.py # Script de diagnóstico específico
 ├── models/               # Modelos de dados
 │   └── base.py           # Definições das tabelas SQLAlchemy
 ├── routes/               # Rotas da API
